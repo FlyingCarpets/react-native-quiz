@@ -19,15 +19,16 @@ export default {
 
     fetchTasks() {
         return function (dispatch) {
-            dispatch({ type: "BEFORE_FETCH_TASKS", payload: true });
+            dispatch({ type: "BEFORE_FETCH_TASKS" });
 
-            axios.get("https://raw.githubusercontent.com/FlyingCarpets/quiz-react/master/assets/data/questions.json")
-                .then(response => {
-                    dispatch({ type: "FETCH_TASKS", payload: randomizeArray(response.data) });
+            fetch("https://raw.githubusercontent.com/FlyingCarpets/quiz-react/master/assets/data/questions.json")
+                .then(response => response.json())
+                .then(responseJson => {
+                    dispatch({ type: "FETCH_TASKS", payload: randomizeArray(responseJson) });
                 })
                 .then(() => {
-                    dispatch({ type: "SELECT_CURRENT_TASK", payload: 0 });
-                    dispatch({ type: "AFTER_FETCH_TASKS", payload: false });
+                    dispatch({ type: "SELECT_CURRENT_TASK" });
+                    dispatch({ type: "AFTER_FETCH_TASKS" });
                 })
                 .catch(err => {
                     console.log(err);

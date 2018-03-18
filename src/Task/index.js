@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 
 import taskActions from './redux/actions';
-import randomizeArray from '../utils';
 
 class Task extends Component {
     constructor(props) {
@@ -33,21 +32,11 @@ class Task extends Component {
     }
 
     componentDidMount() {
-        fetch("https://raw.githubusercontent.com/FlyingCarpets/quiz-react/master/assets/data/questions.json")
-            .then((response) => response.json())
-            .then((responseJson) => {
+        const {
+            actions,
+        } = this.props;
 
-                const taskList = randomizeArray(responseJson);
-
-                this.setState({
-                    tasks: taskList,
-                    loading: false,
-                    currentTask: taskList[0],
-                });
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+        actions.task.fetchTasks();
     }
 
     onTextInsert(text) {
@@ -58,36 +47,35 @@ class Task extends Component {
 
     onSubmit() {
         const {
-            tasks,
-            currentTask,
             insertedValue,
         } = this.state;
 
-        if (insertedValue.toLowerCase() === currentTask.answer) {
-            const currentTaskIndex = tasks.indexOf(currentTask);
+        const {
+            taskData: {
+                currentTask,
+            },
+            actions,
+        } = this.props;
 
-            if (currentTaskIndex+1 < tasks.length) {
-                this.setState({
-                    currentTask: tasks[currentTaskIndex+1],
-                    insertedValue: '',
-                });
-            } else {
-                this.setState({
-                    currentTask: 'finish',
-                });
-            }
-        } else {
-            this.setState({
-                insertedValue: '',
-            });
+        if (insertedValue.toLowerCase() === currentTask.answer) {
+            actions.task.selectNextTask();
         }
+
+        this.setState({
+            insertedValue: '',
+        });
     }
 
     renderTask() {
         const {
-            currentTask,
             insertedValue,
         } = this.state;
+
+        const {
+            taskData: {
+                currentTask,
+            },
+        } = this.props;
 
         return (
             <View>
@@ -122,9 +110,11 @@ class Task extends Component {
 
     render() {
         const {
-            currentTask,
-            loading,
-        } = this.state;
+            taskData: {
+                currentTask,
+                loading,
+            },
+        } = this.props;
 
         const tasksAvaiable = currentTask !== 'finish';
 
@@ -146,6 +136,10 @@ class Task extends Component {
         );
     }
 }
+
+const mapStateToProps = state => ({
+    taskData: state.taskData,
+});
 
 const mapDispatchToProps = dispatch => ({
     actions: {
@@ -173,4 +167,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default connect(null, mapDispatchToProps)(Task);
+export default connect(mapStateToProps, mapDispatchToProps)(Task);
