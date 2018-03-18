@@ -1,11 +1,18 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { StyleSheet, View, Text } from 'react-native';
 
-const Header = () => (
+const Header = ({ taskData: { score } }) => (
     <View style={ styles.container }>
-        <Text style={ styles.text }>Points: </Text>
+        <Text style={ styles.text }>
+            Points: { score }
+        </Text>
     </View>
 );
+
+const mapStateToProps = state => ({
+    taskData: state.taskData,
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -16,4 +23,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Header;
+export default connect(mapStateToProps)(Header);

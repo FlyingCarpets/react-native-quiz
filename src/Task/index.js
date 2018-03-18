@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { fetchTasks } from './redux/actions';
 import {
     StyleSheet,
     View,
@@ -9,6 +12,7 @@ import {
     Button
 } from 'react-native';
 
+import taskActions from './redux/actions';
 import randomizeArray from '../utils';
 
 class Task extends Component {
@@ -143,6 +147,11 @@ class Task extends Component {
     }
 }
 
+const mapDispatchToProps = dispatch => ({
+    actions: {
+        task: bindActionCreators(taskActions, dispatch),
+    },
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -164,4 +173,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Task;
+export default connect(null, mapDispatchToProps)(Task);
