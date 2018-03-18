@@ -1,5 +1,13 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, Image, TextInput, ActivityIndicator } from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Text,
+    Image,
+    TextInput,
+    ActivityIndicator,
+    Button
+} from 'react-native';
 
 import randomizeArray from '../utils';
 
@@ -9,20 +17,28 @@ class Task extends Component {
 
         this.state = {
             tasks: [],
+            currentTask: null,
             loading: true,
             insertedValue: "",
         };
 
         this.onTextInsert = this.onTextInsert.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
+        this.renderTask = this.renderTask.bind(this);
+        this.renderFinish = this.renderFinish.bind(this);
     }
 
     componentDidMount() {
         fetch("https://raw.githubusercontent.com/FlyingCarpets/quiz-react/master/assets/data/questions.json")
             .then((response) => response.json())
             .then((responseJson) => {
+
+                const taskList = randomizeArray(responseJson);
+
                 this.setState({
-                    tasks: randomizeArray(responseJson),
+                    tasks: taskList,
                     loading: false,
+                    currentTask: taskList[0],
                 });
             })
             .catch((error) => {
@@ -36,12 +52,77 @@ class Task extends Component {
         });
     }
 
-    render() {
+    onSubmit() {
         const {
             tasks,
-            loading,
+            currentTask,
             insertedValue,
         } = this.state;
+
+        if (insertedValue.toLowerCase() === currentTask.answer) {
+            const currentTaskIndex = tasks.indexOf(currentTask);
+
+            if (currentTaskIndex+1 < tasks.length) {
+                this.setState({
+                    currentTask: tasks[currentTaskIndex+1],
+                    insertedValue: '',
+                });
+            } else {
+                this.setState({
+                    currentTask: 'finish',
+                });
+            }
+        } else {
+            this.setState({
+                insertedValue: '',
+            });
+        }
+    }
+
+    renderTask() {
+        const {
+            currentTask,
+            insertedValue,
+        } = this.state;
+
+        return (
+            <View>
+                <Text>What is this instrument called?</Text>
+                <Image
+                    source={{ uri: currentTask.image }}
+                    style={ styles.image }
+                />
+                <TextInput
+                    onChangeText={ this.onTextInsert }
+                    value={ insertedValue }
+                    placeholder="Answer"
+                    style={ styles.input }
+                />
+                <Button
+                    onPress={ this.onSubmit }
+                    title="Submit"
+                    color="blue"
+                    accessibilityLabel="Submit"
+                />
+            </View>
+        );
+    }
+
+    renderFinish() {
+        return (
+            <View>
+                <Text>The End</Text>
+            </View>
+        );
+    }
+
+    render() {
+        const {
+            currentTask,
+            loading,
+        } = this.state;
+
+        const tasksAvaiable = currentTask !== 'finish';
 
         if (loading) {
             return (
@@ -53,17 +134,10 @@ class Task extends Component {
 
         return (
             <View style={ styles.container }>
-                <Text>What is this instrument called?</Text>
-                <Image
-                    source={{ uri: tasks[0].image }}
-                    style={ styles.image }
-                />
-                <TextInput
-                    onChangeText={ this.onTextInsert }
-                    value={ insertedValue }
-                    placeholder="Answer"
-                    style={ styles.input }
-                />
+                { tasksAvaiable
+                    ? this.renderTask()
+                    : this.renderFinish()
+                }
             </View>
         );
     }
