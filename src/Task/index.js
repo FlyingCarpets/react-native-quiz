@@ -59,6 +59,7 @@ class Task extends Component {
 
         if (insertedValue.toLowerCase() === currentTask.answer) {
             actions.task.selectNextTask();
+            actions.task.countScore();
         }
 
         this.setState({
